@@ -1,0 +1,457 @@
+<p style="text-align: center;"><b>JPEG Compressor</b> is a fast and easy online tool that lets you compress JPEG images to reduce file size. Simply upload or drag and drop JPEG files, and the tool instantly optimizes them. Created by team<span class="company fw-bold"><a href="https://www.youtube.com/@DevManifesto" style="text-decoration-line: none;"> DevManifesto</a></span></p>
+<style>
+    .custom-upload-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        width: 100%;
+        height: 450px;
+        background-color: #fff;
+        overflow: hidden;
+        margin-top: 12px;
+    }
+    .custom-upload-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+        width: 100%;
+    }
+    .custom-upload-icon { width: 100px; margin-bottom: 10px; }
+    .custom-preview-container {
+        display: none;
+        flex-wrap: wrap;
+        justify-content: center;
+        overflow-y: auto;
+        width: 100%;
+        padding: 10px;
+    }
+    .custom-preview-image {
+        position: relative;
+        width: 100px; height: 100px;
+        object-fit: cover;
+        margin: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .remove-button {
+        position: absolute;
+        top: 5px; right: 5px;
+        background: none; border: none;
+        cursor: pointer; padding: 0;
+        width: 24px; height: 24px;
+    }
+    .remove-button svg { width: 24px; height: 24px; fill: red; }
+    .custom-browse-button {
+        background-color: #007bff; color: white; border: none;
+        padding: 10px 20px; cursor: pointer; border-radius: 5px;
+        font-size: 16px; margin-top: 10px;
+    }
+    .custom-browse-button:hover { background-color: #0056b3; }
+    input[type="file"] { display: none; }
+
+    .quality-container {
+        margin-top: 20px;
+        background-color: #fff;
+        padding: 1rem;
+        border: solid 1px #ccf;
+        border-radius: 10px;
+    }
+    .custom-quality-container,
+    .custom-size-container {
+        margin-top: 20px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+    .custom-quality-container span,
+    .custom-size-container label,
+    .custom-size-container span { margin-right: 3px; }
+    .custom-quality-description { margin-top: 10px; font-size: 14px; color: #555; }
+
+    /* ══ RANGE SLIDER — blue filled track + blue dot ══ */
+    input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+        margin-left: 6px;
+        background: linear-gradient(to right, #007bff 1%, #b8d4f8 1%);
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        background: #007bff;
+        cursor: pointer; border: none;
+        box-shadow: 0 0 0 3px rgba(0,123,255,0.20);
+        transition: box-shadow 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+        box-shadow: 0 0 0 5px rgba(0,123,255,0.30);
+    }
+    input[type="range"]::-moz-range-thumb {
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        background: #007bff;
+        cursor: pointer; border: none;
+        box-shadow: 0 0 0 3px rgba(0,123,255,0.20);
+    }
+    input[type="range"]::-moz-range-progress {
+        background: #007bff; height: 6px; border-radius: 3px;
+    }
+    input[type="range"]::-moz-range-track {
+        background: #b8d4f8; height: 6px; border-radius: 3px;
+    }
+    input[type="range"]:disabled { opacity: 0.45; cursor: not-allowed; }
+    input[type="range"]:disabled::-webkit-slider-thumb { background: #aaa; box-shadow: none; }
+    input[type="range"]:disabled::-moz-range-thumb     { background: #aaa; box-shadow: none; }
+
+    #custom-qualityRange, #custom-sizeRange { width: calc(100% - 120px); }
+
+    /* ══ TOGGLE — Quality ══ */
+    .toggle-switch-quality {
+        position: relative; width: 40px; height: 20px;
+        display: inline-block; margin-right: 10px; flex-shrink: 0;
+    }
+    .toggle-switch-quality input { display: none; }
+    .slider-quality {
+        position: absolute; cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc; transition: 0.4s; border-radius: 20px;
+    }
+    .slider-quality:before {
+        position: absolute; content: "";
+        height: 14px; width: 14px; left: 3px; bottom: 3px;
+        background-color: white; transition: 0.4s; border-radius: 50%;
+    }
+    input:checked + .slider-quality { background-color: #007bff; }
+    input:checked + .slider-quality:before { transform: translateX(20px); }
+    .toggle-switch-quality input:disabled + .slider-quality { opacity: 0.5; cursor: not-allowed; }
+
+    /* ══ TOGGLE — Size ══ */
+    .toggle-switch-size {
+        position: relative; width: 40px; height: 20px;
+        display: inline-block; margin-right: 10px; flex-shrink: 0;
+    }
+    .toggle-switch-size input { display: none; }
+    .slider-size {
+        position: absolute; cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc; transition: 0.4s; border-radius: 20px;
+    }
+    .slider-size:before {
+        position: absolute; content: "";
+        height: 14px; width: 14px; left: 3px; bottom: 3px;
+        background-color: white; transition: 0.4s; border-radius: 50%;
+    }
+    input:checked + .slider-size { background-color: #007bff; }
+    input:checked + .slider-size:before { transform: translateX(20px); }
+    .toggle-switch-size input:disabled + .slider-size { opacity: 0.5; cursor: not-allowed; }
+
+    .custom-button-container { margin-top: 15px; display: flex; gap: 10px; margin-bottom: 15px; }
+    .custom-compress-button {
+        background-color: #007bff; color: white; border: none;
+        padding: 10px 20px; cursor: pointer; border-radius: 5px;
+        font-size: 16px; font-weight: bold;
+    }
+    .custom-compress-button:disabled { background-color: #ccc; cursor: not-allowed; }
+    .custom-compress-button:hover:enabled { background-color: #0056b3; }
+    .custom-download-button {
+        background-color: #d9d9d9; color: black; border: none;
+        padding: 10px 20px; cursor: pointer; border-radius: 5px;
+        font-size: 16px; font-weight: bold; text-decoration: none;
+    }
+    .spinner-overlay {
+        display: none; position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(255,255,255,0.5);
+        z-index: 10; justify-content: center; align-items: center;
+    }
+    .spinner {
+        border: 16px solid #f3f3f3; border-top: 16px solid #007bff;
+        border-radius: 50%; width: 120px; height: 120px;
+        animation: spin 2s linear infinite;
+    }
+    @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+    .error-message { color: red; margin-top: 10px; }
+
+    @media (max-width: 768px) {
+        #custom-qualityRange, #custom-sizeRange { width: calc(100% - 100px); }
+    }
+</style>
+
+<div class="custom-upload-container">
+    <div class="custom-preview-container" id="custom-previewContainer"></div>
+    <div class="custom-upload-area" id="custom-uploadfile">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgg_ouhpX4UtbX0KBYXHkXcDk-pOfCHuHt7Adh73oK5PipdyNLvrzX2e4Ufmy9HB1rHqYM5TEViq-1PrvZ6tFHp5C9R4BeMwnsZMdWLrFEJ_yplQ5eN2hzB49uHRrhuuRQZnKo0Vo8Zm6zyT2IAwm8z3hezH2Dc2tZiiHmSJASKbkDT0YyJHDiOEgokRKBD/s1600/upload.webp" alt="Upload Icon" class="custom-upload-icon" id="custom-uploadIcon">
+        <p id="upload-text">Drag &amp; Drop to upload Files or</p>
+        <button class="custom-browse-button">Browse Files</button>
+        <input type="file" id="custom-webpInput" accept="image/jpeg" multiple hidden>
+    </div>
+    <div class="spinner-overlay" id="spinner-overlay">
+        <div class="spinner" id="spinner"></div>
+    </div>
+    <div class="error-message" id="error-message" style="display:none;">Please upload JPEG images.</div>
+    <div class="error-message" id="size-error-message" style="display:none;">File size cannot be increased beyond the original size.</div>
+</div>
+
+<div class="quality-container">
+    <div class="custom-quality-description" id="custom-qualityDescription">Significant reduction in file size, visible loss of quality.</div>
+    <div class="custom-quality-container">
+        <label class="toggle-switch-quality">
+            <input type="checkbox" id="quality-checkbox" disabled>
+            <span class="slider-quality"></span>
+        </label>
+        <label for="custom-qualityRange">Quality:</label>
+        <span id="custom-qualityValue">1</span>%
+        <input type="range" id="custom-qualityRange" min="1" max="100" value="1" disabled>
+    </div>
+    <div class="custom-size-container">
+        <label class="toggle-switch-size">
+            <input type="checkbox" id="size-checkbox" disabled>
+            <span class="slider-size"></span>
+        </label>
+        <label for="custom-sizeRange">Size:</label>
+        <span id="custom-sizeValue">1</span>KB
+        <input type="range" id="custom-sizeRange" min="1" max="1024" value="1" disabled>
+    </div>
+</div>
+
+<div class="custom-button-container">
+    <button class="custom-compress-button" id="custom-compressButton" disabled>Compress JPEG</button>
+    <a id="custom-downloadButton" class="custom-download-button" style="display:none;">Download JPEG</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/amureborn/JPG-Compressor@main/js/browser-image-compression.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/amureborn/JPG-Compressor@main/js/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/amureborn/JPG-Compressor@main/js/Sortable.min.js"></script>
+<script>
+/*
+(C) prepphint.com all right reserved.
+*/
+
+const qualityRange = document.getElementById('custom-qualityRange');
+const sizeRange    = document.getElementById('custom-sizeRange');
+
+function updateSliderFill(slider) {
+    const min = parseFloat(slider.min) || 0;
+    const max = parseFloat(slider.max) || 100;
+    const val = parseFloat(slider.value) || 0;
+    const pct = ((val - min) / (max - min)) * 100;
+    slider.style.background = slider.disabled
+        ? '#ddd'
+        : 'linear-gradient(to right, #007bff ' + pct + '%, #b8d4f8 ' + pct + '%)';
+}
+
+updateSliderFill(qualityRange);
+updateSliderFill(sizeRange);
+
+document.querySelector('.custom-browse-button').addEventListener('click', function () {
+    document.getElementById('custom-webpInput').click();
+});
+document.getElementById('custom-webpInput').addEventListener('change', function (e) {
+    handleFiles(e.target.files);
+    e.target.value = '';
+});
+
+const uploadArea = document.getElementById('custom-uploadfile');
+uploadArea.addEventListener('dragover',  function (e) { e.preventDefault(); e.stopPropagation(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', function (e) { e.preventDefault(); e.stopPropagation(); uploadArea.classList.remove('dragover'); });
+uploadArea.addEventListener('drop',      function (e) { e.preventDefault(); e.stopPropagation(); uploadArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+
+document.getElementById('quality-checkbox').addEventListener('change', function (e) {
+    qualityRange.disabled = !e.target.checked;
+    if (e.target.checked) { document.getElementById('size-checkbox').checked = false; sizeRange.disabled = true; }
+    updateSliderFill(qualityRange); updateSliderFill(sizeRange);
+    updateCompressButtonState(); hideDownloadButton();
+});
+
+document.getElementById('size-checkbox').addEventListener('change', function (e) {
+    sizeRange.disabled = !e.target.checked;
+    if (e.target.checked) { document.getElementById('quality-checkbox').checked = false; qualityRange.disabled = true; }
+    updateSliderFill(qualityRange); updateSliderFill(sizeRange);
+    updateCompressButtonState(); hideDownloadButton();
+});
+
+sizeRange.addEventListener('input', function (e) {
+    document.getElementById('custom-sizeValue').textContent = e.target.value;
+    updateSliderFill(sizeRange); hideDownloadButton();
+});
+qualityRange.addEventListener('input', function (e) {
+    document.getElementById('custom-qualityValue').textContent = e.target.value;
+    updateSliderFill(qualityRange); updateQualityDescription(e.target.value); hideDownloadButton();
+});
+
+document.getElementById('custom-compressButton').addEventListener('click', function () {
+    if (document.getElementById('size-checkbox').checked) {
+        const maxSizeKB = sizeRange.value;
+        for (const file of filesToCompress) {
+            if (file.size / 1024 < maxSizeKB) { document.getElementById('size-error-message').style.display = 'block'; return; }
+            else { document.getElementById('size-error-message').style.display = 'none'; }
+        }
+    }
+    compressFiles();
+});
+
+let filesToCompress = [];
+
+function handleFiles(files) {
+    const previewContainer = document.getElementById('custom-previewContainer');
+    previewContainer.style.display = 'flex';
+    document.getElementById('custom-downloadButton').style.display = 'none';
+    for (const file of files) {
+        if (file.type === 'image/jpeg') {
+            filesToCompress.push(file);
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.style.position = 'relative';
+                imgWrapper.classList.add('sortable-item');
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('custom-preview-image');
+                const removeButton = document.createElement('button');
+                removeButton.classList.add('remove-button');
+                removeButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M16.95 8.464a1 1 0 1 0-1.414-1.414L12 10.586 8.465 7.05A1 1 0 0 0 7.05 8.464L10.586 12 7.05 15.536a1 1 0 1 0 1.415 1.414L12 13.414l3.536 3.536a1 1 0 1 0 1.414-1.414L13.414 12z" fill="#000"/></svg>';
+                removeButton.addEventListener('click', function () {
+                    const index = filesToCompress.indexOf(file);
+                    if (index > -1) filesToCompress.splice(index, 1);
+                    imgWrapper.remove();
+                    if (filesToCompress.length === 0) {
+                        document.getElementById('custom-compressButton').disabled = true;
+                        hidePreviewContainer(); showUploadIcon(); resetSettings();
+                    }
+                    document.getElementById('custom-downloadButton').style.display = 'none';
+                });
+                imgWrapper.appendChild(img); imgWrapper.appendChild(removeButton);
+                previewContainer.appendChild(imgWrapper);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    if (filesToCompress.length > 0) {
+        document.getElementById('error-message').style.display = 'none';
+        document.getElementById('custom-compressButton').disabled = false;
+        document.getElementById('quality-checkbox').disabled = false;
+        document.getElementById('quality-checkbox').checked = true;
+        qualityRange.disabled = false;
+        document.getElementById('size-checkbox').disabled = false;
+        updateSliderFill(qualityRange); updateSliderFill(sizeRange);
+        hideUploadIcon();
+    } else {
+        document.getElementById('error-message').style.display = 'block';
+        document.getElementById('custom-compressButton').disabled = true;
+        document.getElementById('quality-checkbox').disabled = true;
+        document.getElementById('size-checkbox').disabled = true;
+        updateSliderFill(qualityRange); updateSliderFill(sizeRange);
+    }
+    new Sortable(previewContainer, {
+        animation: 150,
+        onEnd: function (evt) {
+            const oldIndex = evt.oldIndex; const newIndex = evt.newIndex;
+            if (oldIndex !== newIndex) {
+                const movedFile = filesToCompress.splice(oldIndex, 1)[0];
+                filesToCompress.splice(newIndex, 0, movedFile);
+            }
+        }
+    });
+}
+
+async function compressFiles() {
+    if (filesToCompress.length === 0) return;
+    const spinnerOverlay = document.getElementById('spinner-overlay');
+    const downloadButton = document.getElementById('custom-downloadButton');
+    downloadButton.style.display = 'none';
+    spinnerOverlay.style.display = 'flex';
+    const quality = qualityRange.value; const maxSizeKB = sizeRange.value;
+    const options = {
+        maxSizeMB:        !sizeRange.disabled    ? maxSizeKB / 1024 : undefined,
+        maxWidthOrHeight: 1920, useWebWorker: true,
+        initialQuality:   !qualityRange.disabled ? quality / 100 : undefined
+    };
+    try {
+        const compressedFiles = [];
+        for (const file of filesToCompress) {
+            let compressedFile = await imageCompression(file, options);
+            if (document.getElementById('size-checkbox').checked) {
+                while (compressedFile.size / 1024 > maxSizeKB && options.initialQuality > 0.05) {
+                    options.initialQuality -= 0.05;
+                    compressedFile = await imageCompression(file, options);
+                }
+                if (compressedFile.size / 1024 > maxSizeKB) {
+                    compressedFile = await imageCompression(file, { ...options, maxSizeMB: maxSizeKB / 1024, maxWidthOrHeight: 100 });
+                }
+            }
+            compressedFiles.push(compressedFile);
+        }
+        if (compressedFiles.length === 1) createSingleDownloadLink(compressedFiles[0]);
+        else createDownloadLink(compressedFiles);
+    } catch (error) {
+        document.getElementById('error-message').textContent = 'An error occurred during compression. Please try again.';
+        document.getElementById('error-message').style.display = 'block';
+    } finally {
+        setTimeout(function () {
+            spinnerOverlay.style.display = 'none';
+            downloadButton.style.display = 'inline-block';
+        }, 1000);
+    }
+}
+
+function createSingleDownloadLink(compressedFile) {
+    const downloadButton = document.getElementById('custom-downloadButton');
+    const url = URL.createObjectURL(compressedFile);
+    const originalFilename = filesToCompress[0].name.split('.').slice(0, -1).join('.');
+    downloadButton.href = url;
+    downloadButton.download = originalFilename + '_prepphint.com.jpeg';
+}
+function createDownloadLink(compressedFiles) {
+    const downloadButton = document.getElementById('custom-downloadButton');
+    const zip = new JSZip();
+    compressedFiles.forEach(function (file, index) {
+        const originalFilename = filesToCompress[index].name.split('.').slice(0, -1).join('.');
+        zip.file(originalFilename + '_prepphint.com.jpeg', file);
+    });
+    zip.generateAsync({ type: 'blob' }).then(function (content) {
+        downloadButton.href = URL.createObjectURL(content);
+        downloadButton.download = 'compressed_files.zip';
+    });
+}
+function updateCompressButtonState() {
+    document.getElementById('custom-compressButton').disabled =
+        !document.getElementById('quality-checkbox').checked &&
+        !document.getElementById('size-checkbox').checked;
+}
+function hideDownloadButton()   { document.getElementById('custom-downloadButton').style.display = 'none'; }
+function hideUploadIcon()       { document.getElementById('custom-uploadIcon').style.display = 'none'; }
+function showUploadIcon()       { document.getElementById('custom-uploadIcon').style.display = 'block'; }
+function hidePreviewContainer() { document.getElementById('custom-previewContainer').style.display = 'none'; }
+function resetSettings() {
+    document.getElementById('quality-checkbox').checked = false;
+    qualityRange.disabled = true;
+    document.getElementById('size-checkbox').checked = false;
+    sizeRange.disabled = true;
+    document.getElementById('quality-checkbox').disabled = true;
+    document.getElementById('size-checkbox').disabled = true;
+    updateSliderFill(qualityRange); updateSliderFill(sizeRange);
+    updateCompressButtonState();
+}
+function updateQualityDescription(v) {
+    const d = document.getElementById('custom-qualityDescription');
+    if      (v <= 30) d.textContent = 'Significant reduction in file size, visible loss of quality.';
+    else if (v <= 60) d.textContent = 'Moderate reduction in file size, moderate loss of quality.';
+    else if (v <= 90) d.textContent = 'Small reduction in file size, minimal loss of quality.';
+    else              d.textContent = 'Very small reduction in file size, almost no loss of quality.';
+}
+</script>
